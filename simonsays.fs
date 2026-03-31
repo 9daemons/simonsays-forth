@@ -1,21 +1,21 @@
-\variables
+\ variables
 variable tick
 variable pushed-button
 variable last-led
 variable counter
 
-\constants
-\leds
+\ constants
+\ leds
 1 constant redb
 2 constant yellowb
 4 constant greenb
 8 constant blueb
-\masks
-15 constant button-mask \(1+2+4+8 = 15)
-240 constant button-clear \(255 - 15 = 240)
-60 constant leds-mask    \(4+8+16+32 = 60)
-195 constant leds-clear \(255-60 = 195)
-\leds
+\ masks
+15 constant button-mask \ (1+2+4+8 = 15)
+240 constant button-clear \ (255 - 15 = 240)
+60 constant leds-mask    \ (4+8+16+32 = 60)
+195 constant leds-clear \ (255-60 = 195)
+\ leds
 4 constant red
 8 constant yellow
 16 constant green
@@ -26,29 +26,33 @@ variable counter
 100 constant high
 50  constant veryhigh
 
-\basic-functions
-: tickstore $46 c@ 4 mod tick ! ;
+\ basic-functions
+: tickstore $46 io@ 4 mod tick ! ;
 : stop ( n -- ) 0 do loop ;
-: on  ( -- ) portb c@ 16 or portb c! ;
-: off ( -- ) portb c@ 239 and portb c! ;
-: tone ( duration tone -- )
-    0 do
-        on dup stop 
-        off dup stop 
-    loop drop 
+: on  ( -- ) portb io@ 16 or portb c! ;
+: off ( -- ) portb io@ 239 and portb c! ;
+: tone ( tone -- )
+    millis
+    begin ( tone startingtime -- )
+        on over stop 
+        off over stop 
+    millis ( tone startingtime currenttime -- )
+    over - ( tone startingtime elapsedtime -- )
+    1000 > ( tone startingtime f -- ) until ( tone startingtime -- ) 
+    2drop
     off ;
-: note1 low 50 tone ;
-: note2 medium 100 tone ;
-: note3 high 150 tone ;
-: note4 veryhigh 200 tone ;
+: note1 low tone ;
+: note2 medium tone ;
+: note3 high tone ;
+: note4 veryhigh tone ;
 : leds-off ( -- ) 
-    portd c@ leds-clear and portd c! ;
+    portd io@ leds-clear and portd c! ;
 : show-led ( color -- ) 
-    leds-off portd c@ or portd c! ;
-: buttons-input ddrB c@ button-clear and ddrB c! ;
-: leds-output ddrD c@ leds-mask or ddrD c! ;
+    leds-off portd io@ or portd c! ;
+: buttons-input ddrB io@ button-clear and ddrB c! ;
+: leds-output ddrD io@ leds-mask or ddrD c! ;
 
-\important-functions
+\ important-functions
 : random-color
     tick @
     dup 0 = if drop red else
@@ -66,7 +70,7 @@ variable counter
     buttons-input
     leds-off ;
 : read-buttons ( -- n )
-    pinB c@ invert button-mask and ;
+    pinB io@ invert button-mask and ;
 : update-leds ( n -- )
     4 *
     leds-off
@@ -94,15 +98,17 @@ variable counter
         0 counter !
         1
     then ;
+create sequence 100 allot
+variable fail-flag
 
 : playgame
     configuration-restart
     0 counter !
     begin
         tickstore
-        1000 ms
+        500 ms
         random-color show-led random-sound
-        1000 ms
+        500 ms
         leds-off 
         capture-button
         check-play
