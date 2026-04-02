@@ -45,5 +45,4 @@ $4E constant LCD-ADDR          \ PCF8574 address (0x27 << 1), change to $7E if 0
     lcd-clear
     s" Game Over" 0 0 print-lcd ;
 : lcd-score ( -- )
-    s" Score: " 0 0 print-lcd
-    score @ 7 0 print-lcd-number ;
+    s" Score: " 0 0 print-lcd ;

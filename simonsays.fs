@@ -119,10 +119,8 @@ create sequence 100 allot
 : playgame
     configuration-restart
     0 score !
-    lcd-init
     begin
         1000 ms
-        lcd-score
         new-level
         play-sequence
         check-sequence 
@@ -132,4 +130,4 @@ create sequence 100 allot
         key? or
     until 
     fail-announce
-    lcd-game-over;
+;
