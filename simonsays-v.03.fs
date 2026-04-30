@@ -1,4 +1,3 @@
-\ variables
 variable tick
 variable pbtn
 variable last-led
@@ -10,7 +9,6 @@ create tones 200 c, 150 c, 100 c, 50 c,
 create bmap 0 c, 0 c, 1 c, 0 c, 2 c, 0 c, 0 c, 0 c, 3 c,
 $27 constant lcd !
 
-\ basic-functions
 : stop ( n -- ) 0 do loop ;
 : on  ( -- ) portb io@ 16 or portb c! ;
 : off ( -- ) portb io@ 239 and portb c! ;
@@ -47,17 +45,33 @@ $27 constant lcd !
         rnd-snd 
         300 ms leds-off 200 ms
     loop ;
+: ref-seq
+    0 1 lcd lcd-at
+    s"                 " lcd lcd-type
+    0 1 lcd lcd-at ;
+: draw-seq
+    score @ 1 + swap do s" _ " lcd lcd-type loop ;
 : chk-seq
     0 fail !
+    ref-seq 0 draw-seq
+    0 1 lcd lcd-at
     score @ 1 + 0 
     do
+        i 0> i 8 mod 0= and if 
+            ref-seq i draw-seq 
+            0 1 lcd lcd-at 
+        then
         get-btn pbtn @
         seq i + c@ = if
-    else
-        1 fail ! leave
-    then
-        loop
-        fail @ ;
+            s" x " lcd lcd-type
+        else
+            s" ! " lcd lcd-type
+            1 fail ! leave
+        then
+    loop
+    500 ms
+    fail @ ;
+
 : fail-ann
     255 portd io!
     errtone 300 ms leds-off ;
